@@ -1,3 +1,3 @@
 # [PROJECT NAME]
-URL: parallel-fft-fpga.github.io  
+URL: asparticacid211.github.io  
 Team members: Lohith Tummala (lctummal), Kavish Purani (kpurani)
