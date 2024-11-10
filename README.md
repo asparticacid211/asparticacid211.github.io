@@ -1,3 +1,3 @@
 # [PROJECT NAME]
-hello
-hello
+URL: parallel-fft-fpga.github.io
+Team members: Lohith Tummala (lctummal), Kavish Purani (kpurani)
