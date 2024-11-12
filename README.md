@@ -11,7 +11,7 @@ We plan to implement a parallel version of the Cooley-Tuley Radix-2 Fast Fourier
 [Here](https://www.terasic.com.tw/attachment/archive/502/DE2_115_User_manual.pdf) is a link to the user manual for the DE2-115 FPGA. We plan to use this to find out how to leverage certain logic/memory blocks for our algorithm.
 ## Goals
 ### What we plan to achieve
-* C++ MPI version of the FFT algorithm
+* C++ MPI version of the FFT algorithm $5$
 * 8-point FPGA version of the FFT algorithm
 * Cost and performance metrics of MPI vs FPGA implementations
 ### What we hope to achieve
