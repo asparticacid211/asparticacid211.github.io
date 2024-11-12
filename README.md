@@ -13,10 +13,10 @@ We plan to implement a parallel version of the Cooley-Tuley Radix-2 Fast Fourier
 ### What we plan to achieve
 * C++ MPI version of the FFT algorithm
 * 8-point FPGA version of the FFT algorithm
-* Speedup graphs of MPI (and FPGA? how does that work?)
+* Cost and performance metrics of MPI vs FPGA implementations
 ### What we hope to achieve
 * A generalized (N-point) implementation on FPGA (N is a power of 2)
-* A version of the above but N is not a power of 2   
+* Plots of latency, throughput, and logic utilization for various values of N   
 ## Platform
 The devices that we plan to implement this algorithm on are the DE2-115 Altera FPGA and the GHC machines. When we code up the algorithm on the GHC machines, we plan to use the C++ programming language with the OpenMPI language construct. This is because the FFT algorithm is highly recursive, so the process of splitting data and recombining makes the message-passing idea quite intuitive to implement. The GHC machines also have 8 cores, which is why we start off with developing an 8-point algorithm.  
   
