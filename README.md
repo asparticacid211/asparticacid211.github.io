@@ -10,6 +10,9 @@ The algorithm that we plan to use is the Cooley-Tukey Radix-2 algorithm, since i
 $$A_k = \sum_{n=0}^{N-1}a_n \cdot e^{-\frac{2\pi i}{N}nk}$$  
 We can rewrite this:  
 $$A_k = \sum_{n=0}^{N/2-1}a_{2n} \cdot e^{-\frac{2\pi i}{N}(2n)k} + \sum_{n=0}^{N/2-1}a_{2n+1} \cdot e^{-\frac{2\pi i}{N}(2n+1)k} = \sum_{n=0}^{N/2-1}a_{2n} \cdot e^{-\frac{2\pi i}{N/2}nk} + e^{-\frac{2\pi i}{N}k} \cdot\sum_{n=0}^{N/2-1}a_{2n+1} \cdot e^{-\frac{2\pi i}{N/2}nk} = E_k + e^{-\frac{2\pi i}{N}k} \cdot O_k$$ 
+With some more math, we can show that
+$$A_{k+N/2} = E_k - e^{-\frac{2\pi i}{N}k} \cdot O_k$$
+Thus, we can recursively compute E_k and O_k, and then compute the elements of $A$.
 ## Challenges
 ...
 ## Resources
