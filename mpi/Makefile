@@ -1,4 +1,4 @@
-APP_NAME = parallelfft
+APP_NAME = fft_cpu_mpi
 OBJS = parallelfft.o
 
 CXX = mpic++

@@ -113,7 +113,10 @@ module memory_controller
     output complex_16 DataA, DataB, DataW, DataStage
 );
 
-    memDoublePort #(N, 32) 
+    memDoublePort #(N, 32) (.Addr_port1(), .Addr__port2(), .R_W(), 
+                            .Data_W1(), .Data_W2(), .Data_R1(), .Data_R2());
+
+    
 
 
 

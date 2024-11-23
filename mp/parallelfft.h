@@ -8,4 +8,4 @@ struct Complex {
 struct Complex_arr {
   int idx;
   Complex val;
-}
+};
