@@ -1,0 +1,141 @@
+{
+    "stat": {
+        "ru_self_cgstart": {
+            "ru_utime_sec": 0.080495999999999998,
+            "ru_stime_sec": 0.040740999999999999,
+            "ru_minflt": 4159,
+            "ru_maxrss_kb": 77764,
+            "ru_majflt": 0,
+            "ru_nivcsw": 1,
+            "ru_nvcsw": 129
+        },
+        "quadSpeed": 19293.775027302516,
+        "ru_childs_cgstart": {
+            "ru_utime_sec": 0.0,
+            "ru_stime_sec": 0.0,
+            "ru_minflt": 0,
+            "ru_maxrss_kb": 0,
+            "ru_majflt": 0,
+            "ru_nivcsw": 0,
+            "ru_nvcsw": 0
+        },
+        "ru_self_end": {
+            "ru_utime_sec": 0.10247199999999999,
+            "ru_stime_sec": 0.155335,
+            "ru_minflt": 5411,
+            "ru_maxrss_kb": 85452,
+            "ru_majflt": 0,
+            "ru_nivcsw": 1,
+            "ru_nvcsw": 407
+        },
+        "nMops": 1259,
+        "CodeGen(%)": 21.445858380825978,
+        "nQuads": 424,
+        "ru_childs_end": {
+            "ru_utime_sec": 0.0,
+            "ru_stime_sec": 0.0,
+            "ru_minflt": 0,
+            "ru_maxrss_kb": 0,
+            "ru_majflt": 0,
+            "ru_nivcsw": 0,
+            "ru_nvcsw": 0
+        },
+        "totalObjSize": 97154,
+        "mopSpeed": 57289.770658900634,
+        "mop/quad": 2.9693396226415096,
+        "outputSizePerQuad": 229.0,
+        "Frontend(%)": 78.554141619174018
+    },
+    "MlibObjs": {},
+    "CompileStatus": "Successful",
+    "CompileProcesses": [
+        "cgproc.809499.json"
+    ],
+    "PrevCompiledModules": {
+        "_vcs_unit__3550113773": {
+            "L7sJP_d": {
+                "bytes": 10758,
+                "mod": "_vcs_unit__3550113773",
+                "out": "L7sJP_d.o",
+                "mode": 4,
+                "checksum": 4294967295,
+                "archive": "archive.1/_809499_archive_1.a"
+            }
+        },
+        "std": {
+            "reYIK_d": {
+                "bytes": 28470,
+                "mod": "std",
+                "out": "reYIK_d.o",
+                "mode": 4,
+                "checksum": 4294967295,
+                "archive": "archive.1/_prev_archive_1.a"
+            }
+        },
+        "...MASTER...": {
+            "amcQw_d": {
+                "bytes": 7449,
+                "mod": "...MASTER...",
+                "out": "objs/amcQw_d.o",
+                "mode": 4,
+                "checksum": 4294967295
+            }
+        },
+        "agu_tb": {
+            "SiYwf_d": {
+                "bytes": 20786,
+                "mod": "agu_tb",
+                "out": "SiYwf_d.o",
+                "mode": 4,
+                "checksum": 4294967295,
+                "archive": "archive.1/_809499_archive_1.a"
+            }
+        }
+    },
+    "Misc": {
+        "default_output_dir": "csrc",
+        "cwd": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga",
+        "archive_dir": "archive.1",
+        "csrc": "csrc",
+        "csrc_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/csrc",
+        "daidir_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/simv.daidir",
+        "daidir": "simv.daidir"
+    },
+    "NameTable": {
+        "std": [
+            "std",
+            "reYIK",
+            "module"
+        ],
+        "_vcs_unit__3550113773": [
+            "_vcs_unit__3550113773",
+            "L7sJP",
+            "module"
+        ],
+        "agu_tb": [
+            "agu_tb",
+            "SiYwf",
+            "module"
+        ],
+        "...MASTER...": [
+            "SIM",
+            "amcQw",
+            "module"
+        ]
+    },
+    "CompileStrategy": "fullobj",
+    "CurCompileUdps": {},
+    "SIMBData": {
+        "out": "amcQwB.o",
+        "bytes": 58160
+    },
+    "LVLData": [
+        "SIM"
+    ],
+    "CurCompileModules": [
+        "...MASTER...",
+        "_vcs_unit__3550113773",
+        "agu_tb"
+    ],
+    "PEModules": []
+}

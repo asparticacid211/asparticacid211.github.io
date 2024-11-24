@@ -1,0 +1,100 @@
+{
+    "CompileProcesses": [
+        "cgproc.809077.json"
+    ],
+    "NameTable": {
+        "_vcs_unit__3550113773": [
+            "_vcs_unit__3550113773",
+            "L7sJP",
+            "module"
+        ],
+        "std": [
+            "std",
+            "reYIK",
+            "module"
+        ],
+        "agu_tb": [
+            "agu_tb",
+            "SiYwf",
+            "module"
+        ],
+        "...MASTER...": [
+            "SIM",
+            "amcQw",
+            "module"
+        ]
+    },
+    "SIMBData": {
+        "out": "amcQwB.o",
+        "bytes": 58458
+    },
+    "CompileStrategy": "fullobj",
+    "CompileStatus": "Successful",
+    "Misc": {
+        "daidir": "simv.daidir",
+        "cwd": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga",
+        "archive_dir": "archive.0",
+        "csrc": "csrc",
+        "csrc_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/csrc",
+        "daidir_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/simv.daidir",
+        "default_output_dir": "csrc"
+    },
+    "stat": {
+        "Frontend(%)": 67.323421002271459,
+        "totalObjSize": 125921,
+        "mop/quad": 2.758436944937833,
+        "quadSpeed": 14335.548595727343,
+        "ru_self_cgstart": {
+            "ru_utime_sec": 0.080914,
+            "ru_nivcsw": 2,
+            "ru_stime_sec": 0.18406,
+            "ru_maxrss_kb": 70968,
+            "ru_minflt": 3707,
+            "ru_majflt": 2660,
+            "ru_nvcsw": 841
+        },
+        "outputSizePerQuad": 223.0,
+        "ru_childs_cgstart": {
+            "ru_utime_sec": 0.0,
+            "ru_nivcsw": 0,
+            "ru_stime_sec": 0.0,
+            "ru_maxrss_kb": 0,
+            "ru_minflt": 0,
+            "ru_majflt": 0,
+            "ru_nvcsw": 0
+        },
+        "ru_self_end": {
+            "ru_utime_sec": 0.120187,
+            "ru_nivcsw": 2,
+            "ru_stime_sec": 0.33488200000000001,
+            "ru_maxrss_kb": 78460,
+            "ru_minflt": 4977,
+            "ru_majflt": 2757,
+            "ru_nvcsw": 1230
+        },
+        "nMops": 1553,
+        "ru_childs_end": {
+            "ru_utime_sec": 0.0,
+            "ru_nivcsw": 0,
+            "ru_stime_sec": 0.0,
+            "ru_maxrss_kb": 0,
+            "ru_minflt": 0,
+            "ru_majflt": 0,
+            "ru_nvcsw": 0
+        },
+        "nQuads": 563,
+        "mopSpeed": 39543.706872405979,
+        "CodeGen(%)": 32.676578997728541
+    },
+    "CurCompileUdps": {},
+    "LVLData": [
+        "SIM"
+    ],
+    "PEModules": [],
+    "CurCompileModules": [
+        "...MASTER...",
+        "_vcs_unit__3550113773",
+        "std",
+        "agu_tb"
+    ]
+}
