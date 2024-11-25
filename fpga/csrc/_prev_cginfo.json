@@ -1,11 +1,21 @@
 {
-    "CompileProcesses": [
-        "cgproc.809077.json"
+    "Misc": {
+        "default_output_dir": "csrc",
+        "cwd": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga",
+        "archive_dir": "archive.3",
+        "csrc": "csrc",
+        "daidir_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/simv.daidir",
+        "csrc_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/csrc",
+        "daidir": "simv.daidir"
+    },
+    "CurCompileModules": [
+        "...MASTER..."
     ],
+    "MlibObjs": {},
     "NameTable": {
-        "_vcs_unit__3550113773": [
-            "_vcs_unit__3550113773",
-            "L7sJP",
+        "_vcs_unit__3439733815": [
+            "_vcs_unit__3439733815",
+            "IUp7r",
             "module"
         ],
         "std": [
@@ -13,9 +23,14 @@
             "reYIK",
             "module"
         ],
-        "agu_tb": [
-            "agu_tb",
-            "SiYwf",
+        "memory_controller": [
+            "memory_controller",
+            "VVxtU",
+            "module"
+        ],
+        "agu": [
+            "agu",
+            "V9mza",
             "module"
         ],
         "...MASTER...": [
@@ -24,77 +39,113 @@
             "module"
         ]
     },
-    "SIMBData": {
-        "out": "amcQwB.o",
-        "bytes": 58458
-    },
-    "CompileStrategy": "fullobj",
-    "CompileStatus": "Successful",
-    "Misc": {
-        "daidir": "simv.daidir",
-        "cwd": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga",
-        "archive_dir": "archive.0",
-        "csrc": "csrc",
-        "csrc_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/csrc",
-        "daidir_abs": "/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/simv.daidir",
-        "default_output_dir": "csrc"
-    },
     "stat": {
-        "Frontend(%)": 67.323421002271459,
-        "totalObjSize": 125921,
-        "mop/quad": 2.758436944937833,
-        "quadSpeed": 14335.548595727343,
         "ru_self_cgstart": {
-            "ru_utime_sec": 0.080914,
-            "ru_nivcsw": 2,
-            "ru_stime_sec": 0.18406,
-            "ru_maxrss_kb": 70968,
-            "ru_minflt": 3707,
-            "ru_majflt": 2660,
-            "ru_nvcsw": 841
+            "ru_utime_sec": 0.100786,
+            "ru_stime_sec": 0.061718000000000002,
+            "ru_maxrss_kb": 65240,
+            "ru_minflt": 4210,
+            "ru_majflt": 0,
+            "ru_nvcsw": 147,
+            "ru_nivcsw": 3
         },
-        "outputSizePerQuad": 223.0,
+        "totalObjSize": 68784,
         "ru_childs_cgstart": {
             "ru_utime_sec": 0.0,
-            "ru_nivcsw": 0,
             "ru_stime_sec": 0.0,
             "ru_maxrss_kb": 0,
             "ru_minflt": 0,
             "ru_majflt": 0,
-            "ru_nvcsw": 0
+            "ru_nvcsw": 0,
+            "ru_nivcsw": 0
         },
+        "nMops": 49,
+        "outputSizePerQuad": 1206.0,
+        "nQuads": 57,
         "ru_self_end": {
-            "ru_utime_sec": 0.120187,
-            "ru_nivcsw": 2,
-            "ru_stime_sec": 0.33488200000000001,
-            "ru_maxrss_kb": 78460,
-            "ru_minflt": 4977,
-            "ru_majflt": 2757,
-            "ru_nvcsw": 1230
+            "ru_utime_sec": 0.10841000000000001,
+            "ru_stime_sec": 0.16153100000000001,
+            "ru_maxrss_kb": 69112,
+            "ru_minflt": 4983,
+            "ru_majflt": 0,
+            "ru_nvcsw": 395,
+            "ru_nivcsw": 3
         },
-        "nMops": 1553,
+        "CodeGen(%)": 7.0325615718107244,
         "ru_childs_end": {
             "ru_utime_sec": 0.0,
-            "ru_nivcsw": 0,
             "ru_stime_sec": 0.0,
             "ru_maxrss_kb": 0,
             "ru_minflt": 0,
             "ru_majflt": 0,
-            "ru_nvcsw": 0
+            "ru_nvcsw": 0,
+            "ru_nivcsw": 0
         },
-        "nQuads": 563,
-        "mopSpeed": 39543.706872405979,
-        "CodeGen(%)": 32.676578997728541
+        "Frontend(%)": 92.967438428189269
+    },
+    "PrevCompiledModules": {
+        "std": {
+            "reYIK_d": {
+                "bytes": 28470,
+                "archive": "archive.3/_prev_archive_1.a",
+                "mod": "std",
+                "mode": 4,
+                "out": "reYIK_d.o",
+                "checksum": 4294967295
+            }
+        },
+        "_vcs_unit__3439733815": {
+            "IUp7r_d": {
+                "bytes": 10998,
+                "archive": "archive.3/_prev_archive_1.a",
+                "mod": "_vcs_unit__3439733815",
+                "checksum": 4294967295,
+                "out": "IUp7r_d.o",
+                "mode": 4
+            }
+        },
+        "...MASTER...": {
+            "amcQw_d": {
+                "bytes": 10938,
+                "mod": "...MASTER...",
+                "checksum": 4294967295,
+                "out": "objs/amcQw_d.o",
+                "mode": 4
+            }
+        },
+        "agu": {
+            "V9mza_d": {
+                "bytes": 14975,
+                "archive": "archive.3/_prev_archive_1.a",
+                "mod": "agu",
+                "checksum": 4294967295,
+                "out": "V9mza_d.o",
+                "mode": 4
+            }
+        },
+        "memory_controller": {
+            "VVxtU_d": {
+                "bytes": 20580,
+                "archive": "archive.3/_prev_archive_1.a",
+                "mod": "memory_controller",
+                "checksum": 4294967295,
+                "out": "VVxtU_d.o",
+                "mode": 4
+            }
+        }
+    },
+    "CompileStrategy": "fullobj",
+    "SIMBData": {
+        "out": "amcQwB.o",
+        "bytes": 57846
     },
     "CurCompileUdps": {},
+    "CompileStatus": "Successful",
+    "CompileProcesses": [
+        "cgproc.896883.json"
+    ],
     "LVLData": [
         "SIM"
     ],
-    "PEModules": [],
-    "CurCompileModules": [
-        "...MASTER...",
-        "_vcs_unit__3550113773",
-        "std",
-        "agu_tb"
-    ]
+    "PEModules": []
 }

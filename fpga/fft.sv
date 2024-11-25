@@ -14,6 +14,17 @@ typedef struct {
     logic is_last;
 } stage_info_t;
 
+/* 8 Samples file (each real/imaginary is stored in 16 bits)
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+*/
+
 // // simple combinational implementation with 4 multipliers and 2 adders
 // // Can also do it with 3 multipliers and 5 adders 
 // // https://link.springer.com/article/10.1007/s11265-023-01867-7
@@ -41,13 +52,13 @@ typedef struct {
 
 // module 2_pt_butterfly 
 // (
-//     input complex_t Ain, Bin, W;
-//     output complex_t Aout, Bout;
+//     input complex_t Ain, Bin, T,
+//     output complex_t Aout, Bout
 // );
 
 //     complex_t multOut;
 
-//     complex_multiply BtW (.X0(Bin), .X1(W), .out(multOut));
+//     complex_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
 
 //     Aout.a = Ain.a + multOut.a;
 //     Aout.b = Ain.b + multOut.b;
@@ -55,6 +66,27 @@ typedef struct {
 //     Bout.b = Bin.b - multOut.b;
 
 // endmodule 
+
+module top_fft 
+(
+    input clk, rst_n, start, 
+    
+);
+
+endmodule
+
+module test_adder
+(
+    input complex_t Ain, Bin, T,
+    output complex_t Aout, Bout
+);
+
+    Aout.re = Ain.re + T.re;
+    Aout.im = Ain.im + T.im;
+    Bout.re = Bin.re + T.re;
+    Bout.im = Bin.im + T.im;
+
+endmodule
 
 module agu 
 (
@@ -128,7 +160,7 @@ module memory_controller
 );
 
     logic [$clog2(N)-1:0] Addr_port1_mem0, Addr_port2_mem0, Addr_port1_mem1, Addr_port2_mem1;
-    logic R_W_1_mem0, R_W_2_mem0, R_W_1_mem1, R_W_2_mem1; // writing is 1, reading is 0
+    logic we_1_mem0, we_2_mem0, we_1_mem1, we_2_mem1; // writing is 1, reading is 0
     logic [2*DATA_WIDTH-1:0] Data_R1_mem0, Data_R2_mem0, Data_R1_mem1, Data_R2_mem1;
 
     assign stall = (stage_info_W.valid == 1) & (stage_info_W.stage != stage_info_R.stage);
@@ -139,13 +171,13 @@ module memory_controller
                 // write to mem1 
                 Addr_port1_mem1 = addr1_W;
                 Addr_port2_mem1 = addr2_W;
-                R_W_1_mem1 = stage_info_W.valid;
-                R_W_2_mem1 = stage_info_W.valid;
+                we_1_mem1 = stage_info_W.valid;
+                we_2_mem1 = stage_info_W.valid;
                 // read from mem0
                 Addr_port1_mem0 = addr1_R;
                 Addr_port2_mem0 = addr2_R;
-                R_W_1_mem0 = 1'b0;
-                R_W_2_mem0 = 1'b0;
+                we_1_mem0 = 1'b0;
+                we_2_mem0 = 1'b0;
                 {DataOutA.re, DataOutA.im} = Data_R1_mem0;
                 {DataOutB.re, DataOutB.im} = Data_R2_mem0;
             end 
@@ -153,13 +185,13 @@ module memory_controller
                 // write to mem0
                 Addr_port1_mem0 = addr1_W;
                 Addr_port2_mem0 = addr2_W;
-                R_W_1_mem0 = stage_info_W.valid;
-                R_W_2_mem0 = stage_info_W.valid;
+                we_1_mem0 = stage_info_W.valid;
+                we_2_mem0 = stage_info_W.valid;
                 // read from mem1
                 Addr_port1_mem1 = addr1_R;
                 Addr_port2_mem1 = addr2_R;
-                R_W_1_mem1 = 1'b0;
-                R_W_2_mem1 = 1'b0;
+                we_1_mem1 = 1'b0;
+                we_2_mem1 = 1'b0;
                 {DataOutA.re, DataOutA.im} = Data_R1_mem1;
                 {DataOutB.re, DataOutB.im} = Data_R2_mem1;
             end
@@ -168,13 +200,13 @@ module memory_controller
             // write to mem1 
             Addr_port1_mem1 = addr1_W;
             Addr_port2_mem1 = addr2_W;
-            R_W_1_mem1 = stage_info_W.valid;
-            R_W_2_mem1 = stage_info_W.valid;
+            we_1_mem1 = stage_info_W.valid;
+            we_2_mem1 = stage_info_W.valid;
             // read from mem0
             Addr_port1_mem0 = addr1_R;
             Addr_port2_mem0 = addr2_R;
-            R_W_1_mem0 = 1'b0;
-            R_W_2_mem0 = 1'b0;
+            we_1_mem0 = 1'b0;
+            we_2_mem0 = 1'b0;
             {DataOutA.re, DataOutA.im} = Data_R1_mem0;
             {DataOutB.re, DataOutB.im} = Data_R2_mem0;
         end 
@@ -182,46 +214,94 @@ module memory_controller
             // write to mem0
             Addr_port1_mem0 = addr1_W;
             Addr_port2_mem0 = addr2_W;
-            R_W_1_mem0 = stage_info_W.valid;
-            R_W_2_mem0 = stage_info_W.valid;
+            we_1_mem0 = stage_info_W.valid;
+            we_2_mem0 = stage_info_W.valid;
             // read from mem1
             Addr_port1_mem1 = addr1_R;
             Addr_port2_mem1 = addr2_R;
-            R_W_1_mem1 = 1'b0;
-            R_W_2_mem1 = 1'b0;
+            we_1_mem1 = 1'b0;
+            we_2_mem1 = 1'b0;
             {DataOutA.re, DataOutA.im} = Data_R1_mem1;
             {DataOutB.re, DataOutB.im} = Data_R2_mem1;
         end
     end
 
-    memDoublePort #(N, 2*DATA_WIDTH) mem0(.clk, 
-                        .Addr_port1(Addr_port1_mem0), .Addr_port2(Addr_port2_mem0), 
-                        .R_W_1(R_W_1_mem0), .R_W_2(R_W_2_mem0),
-                        .Data_W1({DataInA.re, DataInA.im}), .Data_W2({DataInB.re, DataInB.im}), 
-                        .Data_R1(Data_R1_mem0), .Data_R2(Data_R2_mem0));
-    memDoublePort #(N, 2*DATA_WIDTH) mem1(.clk, 
-                        .Addr_port1(Addr_port1_mem1), .Addr_port2(Addr_port2_mem1), 
-                        .R_W_1(R_W_1_mem1), .R_W_2(R_W_2_mem1),
-                        .Data_W1({DataInA.re, DataInA.im}), .Data_W2({DataInB.re, DataInB.im}), 
-                        .Data_R1(Data_R1_mem1), .Data_R2(Data_R2_mem1));
-    memSinglePort #(N, 2*DATA_WIDTH) memT(.clk, 
-                        .Addr_port(addrT_R), 
-                        .R_W(1'b0), 
-                        .Data_W('b0), 
-                        .Data_R({DataOutT.re, DataOutT.im}));
+    true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, 
+                        .addr_a(Addr_port1_mem0), .addr_b(Addr_port2_mem0), 
+                        .we_a(we_1_mem0), .we_b(we_2_mem0),
+                        .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
+                        .q_a(Data_R1_mem0), .q_b(Data_R2_mem0));
+    true_dpram_sclk #(2*DATA_WIDTH, N) mem1(.clk, 
+                        .addr_a(Addr_port1_mem1), .addr_b(Addr_port2_mem1), 
+                        .we_a(we_1_mem1), .we_b(we_2_mem1),
+                        .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
+                        .q_a(Data_R1_mem1), .q_b(Data_R2_mem1));
+    single_port_rom #(2*DATA_WIDTH, N) memT(.clk, 
+                        .addr(addrT_R), 
+                        .q({DataOutT.re, DataOutT.im}));
     
 endmodule 
 
-/* 8 Samples file (each real/imaginary is stored in 16 bits)
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-*/
+module true_dpram_sclk
+#(
+    parameter WIDTH = 32,
+    parameter DEPTH = 8
+)
+(
+	input logic [WIDTH-1:0] data_a, data_b,
+	input logic [$clog2(DEPTH)-1:0] addr_a, addr_b,
+	input logic we_a, we_b, clk,
+	output logic [WIDTH-1:0] q_a, q_b
+);
+	// Declare the RAM variable
+	logic [WIDTH-1:0] ram[DEPTH-1:0];
+	initial begin 
+        $readmemh ("input_samples.mem", rom); 
+    end
+
+	always_ff @(posedge clk) begin
+        // Port A
+		if (we_a) begin
+			ram[addr_a] <= data_a;
+			q_a <= data_a;
+		end
+		else begin
+			q_a <= ram[addr_a];
+		end
+        // Port B
+        if (we_b) begin
+			ram[addr_b] <= data_b;
+			q_b <= data_b;
+		end
+		else begin
+			q_b <= ram[addr_b];
+		end
+	end
+	
+endmodule
+
+module single_port_rom
+#(
+    parameter WIDTH = 32,
+    parameter DEPTH = 8
+)
+(
+	input logic [$clog2(DEPTH)-1:0] addr,
+	input logic clk,
+	output logic [WIDTH-1:0] q
+);
+	// Declare the ROM variable
+	logic [WIDTH-1:0] rom[DEPTH-1:0];
+    initial begin 
+        $readmemh ("twiddle_factors.mem", rom); 
+    end
+	
+	always_ff @(posedge clk) begin
+		q <= rom[addr];
+	end
+	
+endmodule
+
 
 
 
