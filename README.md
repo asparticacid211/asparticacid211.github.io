@@ -47,3 +47,5 @@ December 1-7: Benchmark results, slack time for any delays, and work on generali
 December 8-13: Write final paper and poster, work on stretch goals if time permits  
 ## Link to Proposal
 [Here](https://docs.google.com/document/d/1yUG169tpelAlSbY27yceWbm1mbr4Q-zQNxzeF_RIxFM/edit?usp=sharing) is a link to our proposal.
+## Link to Milestone
+[Here](https://docs.google.com/document/d/1zhx1i9Y2WM3aTlEuAgh4CN6cTfl6yOpxplJLrfy2h84/edit?usp=sharing) is a link to our milestone report.
