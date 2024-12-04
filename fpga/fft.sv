@@ -1,31 +1,22 @@
 `default_nettype none
 
-localparam DATA_WIDTH = 16;
-localparam N = 8;
-
 typedef struct {
-    logic [DATA_WIDTH-1:0] re;
-    logic [DATA_WIDTH-1:0] im;
+    logic [15:0] re;
+    logic [15:0] im;
 } complex_t;
 
 typedef struct {
-    logic [$clog2(N)-1:0] stage;
+    logic [2:0] stage;
     logic valid;
     logic is_last;
 } stage_info_t;
 
-/* 8 Samples file (each real/imaginary is stored in 16 bits)
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-*/
-
 module top_fft 
+#(
+    parameter N = 8,
+    parameter DATA_WIDTH = 16,
+    parameter FRACBITS = 0
+)
 (
     input logic clk, rst_n, start,
     output logic finish
@@ -35,15 +26,15 @@ module top_fft
     logic [$clog2(N)-1:0] addr1_agu, addr2_agu, addrT_agu;
     logic [$clog2(N)-1:0] addr1_mem, addr2_mem;
     logic [$clog2(N)-1:0] addr1_mult, addr2_mult;
-    logic complex_t data1_mem, data2_mem, dataT_mem;
-    logic complex_t data1_mult, data2_mult;
+    complex_t data1_mem, data2_mem, dataT_mem;
+    complex_t data1_mult, data2_mult;
     stage_info_t stage_info_agu, stage_info_mem, stage_info_mult;
     
-    agu agu_inst(.clk, .rst_n, .start, .finish, .stall, 
+    agu #(N, DATA_WIDTH) agu_inst(.clk, .rst_n, .start, .finish, .stall, 
                 .addr1(addr1_agu), .addr2(addr2_agu), 
-                .addrT(addrT_agu). .stage_info(stage_info_agu));
+                .addrT(addrT_agu), .stage_info(stage_info_agu));
 
-    memory_controller mem_control(.clk, .stall, .finish, 
+    memory_controller #(N, DATA_WIDTH) mem_control(.clk, .stall, .finish, .rst_n,
                 .stage_info_R(stage_info_agu), .stage_info_W(stage_info_mult), 
                 .DataInA(data1_mult), .DataInB(data2_mult), 
                 .addr1_R(addr1_agu), .addr2_R(addr2_agu), .addrT_R(addrT_agu),
@@ -52,7 +43,7 @@ module top_fft
                 .addr1_out(addr1_mem), .addr2_out(addr2_mem),
                 .stage_info_out(stage_info_mem));
 
-    pt2_butterfly butterfly(
+    pt2_butterfly #(N, DATA_WIDTH, FRACBITS) butterfly(
         .Ain(data1_mem), .Bin(data2_mem), .T(dataT_mem),
         .addr1_in(addr1_mem), .addr2_in(addr2_mem),
         .stage_info_in(stage_info_mem),
@@ -63,6 +54,10 @@ module top_fft
 endmodule
 
 module agu 
+#(
+    parameter N = 8,
+    parameter DATA_WIDTH = 16
+)
 (
     input logic clk, rst_n, start, stall, finish,
     output logic [$clog2(N)-1:0] addr1, addr2, addrT, 
@@ -122,6 +117,10 @@ module agu
 endmodule 
 
 module memory_controller 
+#(
+    parameter N = 8,
+    parameter DATA_WIDTH = 16
+)
 (   
     input logic clk, rst_n,
     input stage_info_t stage_info_R, stage_info_W, 
@@ -140,7 +139,6 @@ module memory_controller
     logic [2*DATA_WIDTH-1:0] Data_R1_mem0, Data_R2_mem0, Data_R1_mem1, Data_R2_mem1;
 
     assign stall = (stage_info_W.valid == 1) & (stage_info_W.stage != stage_info_R.stage);
-    assign finish = (stage_info_W.valid == 1) & (stage_info_W.is_last == 1);
 
     always_comb begin 
         if (stall) begin
@@ -208,6 +206,7 @@ module memory_controller
             stage_info_out.stage <= 0;
             stage_info_out.valid <= 0;
             stage_info_out.is_last <= 0;
+            finish = 0;
         end
         else begin
             stage_info_out.stage <= stage_info_R.stage;
@@ -215,15 +214,16 @@ module memory_controller
             stage_info_out.is_last <= stage_info_R.is_last;
             addr1_out <= addr1_R;
             addr2_out <= addr2_R;
+            finish <= (stage_info_W.valid == 1) & (stage_info_W.is_last == 1);
         end
     end
 
-    true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, 
+    true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, .rst_n,
                         .addr_a(Addr_port1_mem0), .addr_b(Addr_port2_mem0), 
                         .we_a(we_1_mem0), .we_b(we_2_mem0),
                         .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
                         .q_a(Data_R1_mem0), .q_b(Data_R2_mem0));
-    true_dpram_sclk #(2*DATA_WIDTH, N) mem1(.clk, 
+    true_dpram_sclk #(2*DATA_WIDTH, N) mem1(.clk, .rst_n,
                         .addr_a(Addr_port1_mem1), .addr_b(Addr_port2_mem1), 
                         .we_a(we_1_mem1), .we_b(we_2_mem1),
                         .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
@@ -235,6 +235,11 @@ module memory_controller
 endmodule 
 
 module pt2_butterfly 
+#(
+    parameter N = 8,
+    parameter DATA_WIDTH = 16,
+    parameter FRACBITS = 0
+)
 (
     input complex_t Ain, Bin, T,
     input logic [$clog2(N)-1:0] addr1_in, addr2_in,
@@ -247,12 +252,12 @@ module pt2_butterfly
     complex_t multOut;
 
     // complex_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
-    test_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
+    test_multiply #(DATA_WIDTH, FRACBITS) BtW (.X0(Bin), .X1(T), .out(multOut));
 
-    Aout.a = Ain.a + multOut.a;
-    Aout.b = Ain.b + multOut.b;
-    Bout.a = Bin.a - multOut.a;
-    Bout.b = Bin.b - multOut.b;
+    assign Aout.re = Ain.re + multOut.re;
+    assign Aout.im = Ain.im + multOut.im;
+    assign Bout.re = Ain.re - multOut.re;
+    assign Bout.im = Ain.im - multOut.im;
 
     // change once pipelined
     assign stage_info_out = stage_info_in;
@@ -288,23 +293,27 @@ endmodule
 // endmodule 
 
 module test_multiply 
+#(
+    parameter WIDTH = 16,
+    parameter FRACBITS = 0
+)
 (
-    input complex_t X0, X1;
-    output complex_t out;
+    input complex_t X0, X1,
+    output complex_t out
 );
 
-    logic [31:0] ac, ad, bc, bd, acbd, adbc;
+    logic [2*WIDTH-1:0] ac, ad, bc, bd, acbd, adbc;
     //(a + ib)*(c + id)
-    ac = X0.re * X1.re;
-    ad = X0.re * X1.im;
-    bc = X0.im * X1.re;
-    bd = X0.im * X1.im;
+    assign ac = X0.re * X1.re;
+    assign ad = X0.re * X1.im;
+    assign bc = X0.im * X1.re;
+    assign bd = X0.im * X1.im;
 
-    assign acbd = ac + cd;
+    assign acbd = ac - bd;
     assign adbc = ad + bc;
 
-    assign out.re = acbd[30:15];
-    assign out.im = adbc[30:15];
+    assign out.re = acbd[(WIDTH-1+FRACBITS):FRACBITS];
+    assign out.im = adbc[(WIDTH-1+FRACBITS):FRACBITS];
 
 endmodule 
 
@@ -316,32 +325,34 @@ module true_dpram_sclk
 (
 	input logic [WIDTH-1:0] data_a, data_b,
 	input logic [$clog2(DEPTH)-1:0] addr_a, addr_b,
-	input logic we_a, we_b, clk,
+	input logic we_a, we_b, clk, rst_n,
 	output logic [WIDTH-1:0] q_a, q_b
 );
 	// Declare the RAM variable
 	logic [WIDTH-1:0] ram[DEPTH-1:0];
-	initial begin 
-        $readmemh ("input_samples.mem", rom); 
-    end
 
 	always_ff @(posedge clk) begin
-        // Port A
-		if (we_a) begin
-			ram[addr_a] <= data_a;
-			q_a <= data_a;
-		end
-		else begin
-			q_a <= ram[addr_a];
-		end
-        // Port B
-        if (we_b) begin
-			ram[addr_b] <= data_b;
-			q_b <= data_b;
-		end
-		else begin
-			q_b <= ram[addr_b];
-		end
+        if (~rst_n) begin
+            $readmemh ("input_samples.mem", ram); 
+        end
+        else begin
+            // Port A
+            if (we_a) begin
+                ram[addr_a] <= data_a;
+                q_a <= data_a;
+            end
+            else begin
+                q_a <= ram[addr_a];
+            end
+            // Port B
+            if (we_b) begin
+                ram[addr_b] <= data_b;
+                q_b <= data_b;
+            end
+            else begin
+                q_b <= ram[addr_b];
+            end
+        end
 	end
 	
 endmodule
@@ -358,9 +369,6 @@ module single_port_rom
 );
 	// Declare the ROM variable
 	logic [WIDTH-1:0] rom[DEPTH-1:0];
-    initial begin 
-        $readmemh ("twiddle_factors.mem", rom); 
-    end
 	
 	always_ff @(posedge clk) begin
 		q <= rom[addr];
@@ -368,6 +376,16 @@ module single_port_rom
 	
 endmodule
 
+/* 8 Samples file (each real/imaginary is stored in 16 bits)
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+abcdef01
+*/
 
 
 
