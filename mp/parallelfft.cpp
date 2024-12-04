@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Random number generator
-  num_points = 1048576;
+  num_points = 1 << 20;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
     nums[i].re = rand()%20;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
     count5 = 0;
     count6 = 0;
     count7 = 0;
-    double wtime = omp_get_wtime();
+    // double wtime = omp_get_wtime();
     // printf("num_threads: %d\n", omp_get_num_threads());
     #pragma omp parallel for default(none) shared(i, nums, num_levels, num_threads, count0, count1, count2, count3, count4, count5, count6, count7) private(j, idx1, idx2, v1, v2) schedule(static, 1)
     for (j = 0; j < num_levels; j++) {
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
       std::tie(v1, v2) = butterfly(nums[idx1], nums[idx2], (j % (1 << i)), (1 << (i + 1)));
       nums[idx1] = v1;
       nums[idx2] = v2;
-      double end = omp_get_wtime();
+      // double end = omp_get_wtime();
       if (omp_get_thread_num() == 0) count0++;
       else if (omp_get_thread_num() == 1) count1++;
       else if (omp_get_thread_num() == 2) count2++;
@@ -145,11 +145,15 @@ int main(int argc, char *argv[]) {
       else if (omp_get_thread_num() == 5) count5++;
       else if (omp_get_thread_num() == 6) count6++;
       else count7++;
+      double end = omp_get_wtime();
       // printf("num_threads: %d\n", omp_get_num_threads());
-      // printf("time %d: %f\n", omp_get_thread_num(), end - start);
+      // printf("time %d: %.8f\n", omp_get_thread_num(), end - start);
     }
-    wtime = omp_get_wtime() - wtime;
+    // wtime = omp_get_wtime() - wtime;
     // printf( "Time taken by thread %d is %f\n", omp_get_thread_num(), wtime );
+    double stage_elapsed = omp_get_wtime() - stage_start;
+    printf("stage %d time: %f\n", i, stage_elapsed);
+    /*
     printf("count0: %d\n", count0);
     printf("count1: %d\n", count1);
     printf("count2: %d\n", count2);
@@ -158,8 +162,9 @@ int main(int argc, char *argv[]) {
     printf("count5: %d\n", count5);
     printf("count6: %d\n", count6);
     printf("count7: %d\n", count7);
-    double stage_elapsed = omp_get_wtime() - stage_start;
-    printf("stage %d time: %f\n", i, stage_elapsed);
+    */
+    // double stage_elapsed = omp_get_wtime() - stage_start;
+    // printf("stage %d time: %f\n", i, stage_elapsed);
     stage_sum += stage_elapsed;
   }
 
