@@ -25,66 +25,40 @@ abcdef01
 abcdef01
 */
 
-// // simple combinational implementation with 4 multipliers and 2 adders
-// // Can also do it with 3 multipliers and 5 adders 
-// // https://link.springer.com/article/10.1007/s11265-023-01867-7
-// // Also could pipeline it 
-// module complex_multiply 
-// (
-//     input complex_t X0, X1;
-//     output complex_t out;
-// );
-
-//     logic [31:0] ac, ad, bc, bd, acbd, adbc;
-//     //(a + ib)*(c + id)
-//     multiplier_161632 AC(.dataa(X0.re), .datab(X1.re), .result(ac));
-//     multiplier_161632 AD(.dataa(X0.re), .datab(X1.im), .result(ad));
-//     multiplier_161632 BC(.dataa(X0.im), .datab(X1.re), .result(bc));
-//     multiplier_161632 BD(.dataa(X0.im), .datab(X1.im), .result(bd));
-
-//     assign acbd = ac + cd;
-//     assign adbc = ad + bc;
-
-//     assign out.re = acbd[30:15];
-//     assign out.im = adbc[30:15];
-
-// endmodule 
-
-// module 2_pt_butterfly 
-// (
-//     input complex_t Ain, Bin, T,
-//     output complex_t Aout, Bout
-// );
-
-//     complex_t multOut;
-
-//     complex_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
-
-//     Aout.a = Ain.a + multOut.a;
-//     Aout.b = Ain.b + multOut.b;
-//     Bout.a = Bin.a - multOut.a;
-//     Bout.b = Bin.b - multOut.b;
-
-// endmodule 
-
 module top_fft 
 (
-    input clk, rst_n, start, 
+    input logic clk, rst_n, start,
+    output logic finish
+);
+
+    logic stall;
+    logic [$clog2(N)-1:0] addr1_agu, addr2_agu, addrT_agu;
+    logic [$clog2(N)-1:0] addr1_mem, addr2_mem;
+    logic [$clog2(N)-1:0] addr1_mult, addr2_mult;
+    logic complex_t data1_mem, data2_mem, dataT_mem;
+    logic complex_t data1_mult, data2_mult;
+    stage_info_t stage_info_agu, stage_info_mem, stage_info_mult;
     
-);
+    agu agu_inst(.clk, .rst_n, .start, .finish, .stall, 
+                .addr1(addr1_agu), .addr2(addr2_agu), 
+                .addrT(addrT_agu). .stage_info(stage_info_agu));
 
-endmodule
+    memory_controller mem_control(.clk, .stall, .finish, 
+                .stage_info_R(stage_info_agu), .stage_info_W(stage_info_mult), 
+                .DataInA(data1_mult), .DataInB(data2_mult), 
+                .addr1_R(addr1_agu), .addr2_R(addr2_agu), .addrT_R(addrT_agu),
+                .addr1_W(addr1_mult), .addr2_W(addr2_mult),
+                .DataOutA(data1_mem), .DataOutB(data2_mem), .DataOutT(dataT_mem),
+                .addr1_out(addr1_mem), .addr2_out(addr2_mem),
+                .stage_info_out(stage_info_mem));
 
-module test_adder
-(
-    input complex_t Ain, Bin, T,
-    output complex_t Aout, Bout
-);
-
-    Aout.re = Ain.re + T.re;
-    Aout.im = Ain.im + T.im;
-    Bout.re = Bin.re + T.re;
-    Bout.im = Bin.im + T.im;
+    pt2_butterfly butterfly(
+        .Ain(data1_mem), .Bin(data2_mem), .T(dataT_mem),
+        .addr1_in(addr1_mem), .addr2_in(addr2_mem),
+        .stage_info_in(stage_info_mem),
+        .addr1_out(addr1_mult), .addr2_out(addr2_mult),
+        .stage_info_out(stage_info_mult),
+        .Aout(data1_mult), .Bout(data2_mult));
 
 endmodule
 
@@ -149,14 +123,16 @@ endmodule
 
 module memory_controller 
 (   
-    input logic clk,
+    input logic clk, rst_n,
     input stage_info_t stage_info_R, stage_info_W, 
     input complex_t DataInA, DataInB,
-    input logic [$clog2(N)-1:0] addr1_R, addr2_R, addrT_R, stage_R,
-    input logic [$clog2(N)-1:0] addr1_W, addr2_W, stage_W,
+    input logic [$clog2(N)-1:0] addr1_R, addr2_R, addrT_R,
+    input logic [$clog2(N)-1:0] addr1_W, addr2_W,
     output complex_t DataOutA, DataOutB, DataOutT,
+    output logic [$clog2(N)-1:0] addr1_out, addr2_out,
     output stage_info_t stage_info_out,
-    output logic stall
+    output logic stall,
+    output logic finish
 );
 
     logic [$clog2(N)-1:0] Addr_port1_mem0, Addr_port2_mem0, Addr_port1_mem1, Addr_port2_mem1;
@@ -164,6 +140,7 @@ module memory_controller
     logic [2*DATA_WIDTH-1:0] Data_R1_mem0, Data_R2_mem0, Data_R1_mem1, Data_R2_mem1;
 
     assign stall = (stage_info_W.valid == 1) & (stage_info_W.stage != stage_info_R.stage);
+    assign finish = (stage_info_W.valid == 1) & (stage_info_W.is_last == 1);
 
     always_comb begin 
         if (stall) begin
@@ -226,6 +203,21 @@ module memory_controller
         end
     end
 
+    always_ff @(posedge clk) begin
+        if (~rst_n) begin
+            stage_info_out.stage <= 0;
+            stage_info_out.valid <= 0;
+            stage_info_out.is_last <= 0;
+        end
+        else begin
+            stage_info_out.stage <= stage_info_R.stage;
+            stage_info_out.valid <= stage_info_R.valid;
+            stage_info_out.is_last <= stage_info_R.is_last;
+            addr1_out <= addr1_R;
+            addr2_out <= addr2_R;
+        end
+    end
+
     true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, 
                         .addr_a(Addr_port1_mem0), .addr_b(Addr_port2_mem0), 
                         .we_a(we_1_mem0), .we_b(we_2_mem0),
@@ -240,6 +232,80 @@ module memory_controller
                         .addr(addrT_R), 
                         .q({DataOutT.re, DataOutT.im}));
     
+endmodule 
+
+module pt2_butterfly 
+(
+    input complex_t Ain, Bin, T,
+    input logic [$clog2(N)-1:0] addr1_in, addr2_in,
+    input stage_info_t stage_info_in,
+    output logic [$clog2(N)-1:0] addr1_out, addr2_out,
+    output stage_info_t stage_info_out,
+    output complex_t Aout, Bout
+);
+
+    complex_t multOut;
+
+    // complex_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
+    test_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
+
+    Aout.a = Ain.a + multOut.a;
+    Aout.b = Ain.b + multOut.b;
+    Bout.a = Bin.a - multOut.a;
+    Bout.b = Bin.b - multOut.b;
+
+    // change once pipelined
+    assign stage_info_out = stage_info_in;
+
+    assign addr1_out = addr1_in;
+    assign addr2_out = addr2_in;
+
+endmodule 
+
+// // simple combinational implementation with 4 multipliers and 2 adders
+// // Can also do it with 3 multipliers and 5 adders 
+// // https://link.springer.com/article/10.1007/s11265-023-01867-7
+// // Also could pipeline it 
+// module complex_multiply 
+// (
+//     input complex_t X0, X1;
+//     output complex_t out;
+// );
+
+//     logic [31:0] ac, ad, bc, bd, acbd, adbc;
+//     //(a + ib)*(c + id)
+//     multiplier_161632 AC(.dataa(X0.re), .datab(X1.re), .result(ac));
+//     multiplier_161632 AD(.dataa(X0.re), .datab(X1.im), .result(ad));
+//     multiplier_161632 BC(.dataa(X0.im), .datab(X1.re), .result(bc));
+//     multiplier_161632 BD(.dataa(X0.im), .datab(X1.im), .result(bd));
+
+//     assign acbd = ac + cd;
+//     assign adbc = ad + bc;
+
+//     assign out.re = acbd[30:15];
+//     assign out.im = adbc[30:15];
+
+// endmodule 
+
+module test_multiply 
+(
+    input complex_t X0, X1;
+    output complex_t out;
+);
+
+    logic [31:0] ac, ad, bc, bd, acbd, adbc;
+    //(a + ib)*(c + id)
+    ac = X0.re * X1.re;
+    ad = X0.re * X1.im;
+    bc = X0.im * X1.re;
+    bd = X0.im * X1.im;
+
+    assign acbd = ac + cd;
+    assign adbc = ad + bc;
+
+    assign out.re = acbd[30:15];
+    assign out.im = adbc[30:15];
+
 endmodule 
 
 module true_dpram_sclk
