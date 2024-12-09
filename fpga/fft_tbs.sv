@@ -44,12 +44,12 @@
 module fft_tb;
 
     localparam N_samples = 8;
-    localparam DATA_SIZE = 16;
-    localparam FRACBITS = 0;
+    localparam DATA_WIDTH = 16;
+    localparam FRACBITS = 8;
 
     logic clk, rst_n, finish, start;
 
-    top_fft #(N_samples, DATA_SIZE, FRACBITS) TOP(.*);
+    top_fft #(N_samples, DATA_WIDTH, FRACBITS) TOP(.*);
 
     // Internal register to store the counter value
     logic [31:0] cycle_count;
@@ -88,7 +88,10 @@ module fft_tb;
     end
 
     static int r1;
+    logic [2*DATA_WIDTH-1:0] bitch;
+    int fd;
     initial begin
+
         rst_n = 1'b1;
         rst_n <= 1'b0;
         start <= 1'b0;
@@ -99,42 +102,36 @@ module fft_tb;
         start <= 1'b1;
         @(posedge clk);
         start <= 1'b0;
-
-        // $monitor("@%0t: Addr1=%d, Addr2=%d, stall=%d", $time, TOP.addr1_agu, TOP.addr2_agu, TOP.stall);
         
         @(posedge finish);
-
-        // $writememh("memory_contents_mem0.hex", TOP.mem_control.mem0.ram);
-        // $writememh("memory_contents_mem1.hex", TOP.mem_control.mem1.ram);
-        @(posedge clk);
+        
+        force TOP.mem_control.we_1_mem0 = 0;
+        force TOP.mem_control.we_1_mem1 = 0;
         $display("Cycle Count:%d", cycle_count);
 
         /*  Read Data from RAM0     */
-        force TOP.mem_control.we_1_mem0 = 0;
         for (int i=0; i<N_samples; i++) begin
             r1 = i;
             force TOP.mem_control.Addr_port1_mem0 = r1;
             @(posedge clk);
             @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            $display("Mem0 | Addr:%h | Val:%h", TOP.mem_control.Addr_port1_mem0, TOP.mem_control.Data_R1_mem0);
+            bitch = TOP.mem_control.Data_R1_mem0;
+            $display("Mem0 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem0, $signed(bitch[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(bitch[DATA_WIDTH-1:0]));
             release TOP.mem_control.Addr_port1_mem0;
         end
         release TOP.mem_control.we_1_mem0;
 
         $display("**********************************************");
-
+        fd = $fopen("outputs.mem", "w");
         /*  Read Data from RAM1     */
-        force TOP.mem_control.we_1_mem1 = 0;
         for (int i=0; i<N_samples; i++) begin
             r1 = i;
             force TOP.mem_control.Addr_port1_mem1 = r1;
             @(posedge clk);
             @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            $display("Mem1 | Addr:%h | Val:%h", TOP.mem_control.Addr_port1_mem1, TOP.mem_control.Data_R1_mem1);
+            bitch = TOP.mem_control.Data_R1_mem1;
+            $display("Mem1 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem1, $signed(bitch[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(bitch[DATA_WIDTH-1:0]));
+            $fdisplay(fd, "%h", bitch);
             release TOP.mem_control.Addr_port1_mem1;
         end
         release TOP.mem_control.we_1_mem1;
@@ -147,9 +144,7 @@ module fft_tb;
             force TOP.mem_control.addrT_R = r1;
             @(posedge clk);
             @(posedge clk);
-            @(posedge clk);
-            @(posedge clk);
-            $display("ROM | Addr:%h | Val:%h", TOP.mem_control.addrT_R, {TOP.mem_control.DataOutT.re, TOP.mem_control.DataOutT.im});
+            $display("ROM  | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.addrT_R, $signed(TOP.mem_control.DataOutT.re), $signed(TOP.mem_control.DataOutT.im));
             release TOP.mem_control.addrT_R;
         end
 

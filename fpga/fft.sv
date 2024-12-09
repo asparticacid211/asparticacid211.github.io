@@ -138,6 +138,9 @@ module memory_controller
     logic we_1_mem0, we_2_mem0, we_1_mem1, we_2_mem1; // writing is 1, reading is 0
     logic [2*DATA_WIDTH-1:0] Data_R1_mem0, Data_R2_mem0, Data_R1_mem1, Data_R2_mem1;
 
+    stage_info_t stage_buffer;
+    logic [$clog2(N)-1:0] addr1_out_buffer, addr2_out_buffer;
+
     assign stall = (stage_info_W.valid == 1) & (stage_info_W.stage != stage_info_R.stage);
 
     always_comb begin 
@@ -203,17 +206,19 @@ module memory_controller
 
     always_ff @(posedge clk) begin
         if (~rst_n) begin
-            stage_info_out.stage <= 0;
-            stage_info_out.valid <= 0;
-            stage_info_out.is_last <= 0;
-            finish = 0;
+            stage_info_out <= '{default: '0};
+            stage_buffer <= '{default: '0};
+            finish <= 0;
         end
         else begin
-            stage_info_out.stage <= stage_info_R.stage;
-            stage_info_out.valid <= stage_info_R.valid;
-            stage_info_out.is_last <= stage_info_R.is_last;
-            addr1_out <= addr1_R;
-            addr2_out <= addr2_R;
+            stage_buffer <= stage_info_R;
+            addr1_out_buffer <= addr1_R;
+            addr2_out_buffer <= addr2_R;
+
+            stage_info_out <= stage_buffer;
+            addr1_out <= addr1_out_buffer;
+            addr2_out <= addr2_out_buffer;
+
             finish <= (stage_info_W.valid == 1) & (stage_info_W.is_last == 1);
         end
     end

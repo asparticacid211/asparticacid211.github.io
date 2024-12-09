@@ -41,7 +41,7 @@ def write_twiddles(f, N, fracbits):
     f.write("DATA_RADIX = HEX;\n\n")
     f.write("CONTENT BEGIN\n\n")
 
-    for i, count in enumerate(range(N)):
+    for i in range(N):
         vcos = math.cos(-2 * math.pi * i/N)
         vsin = math.sin(-2 * math.pi * i/N)
         hex1 = float_to_hex(vcos, fracbits)
