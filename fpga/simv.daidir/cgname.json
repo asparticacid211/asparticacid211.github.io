@@ -1,0 +1,52 @@
+{
+    "_vcs_unit__367350812": [
+        "_vcs_unit__367350812",
+        "gx15i",
+        "module"
+    ],
+    "std": [
+        "std",
+        "reYIK",
+        "module"
+    ],
+    "fft_tb": [
+        "fft_tb",
+        "LrM9p",
+        "module"
+    ],
+    "memory_controller": [
+        "memory_controller",
+        "VVxtU",
+        "module"
+    ],
+    "dualportram": [
+        "dualportram",
+        "WIBsp",
+        "module"
+    ],
+    "ALTERA_DEVICE_FAMILIES": [
+        "ALTERA_DEVICE_FAMILIES",
+        "uFC8u",
+        "module"
+    ],
+    "multiplier": [
+        "multiplier",
+        "m6KP2",
+        "module"
+    ],
+    "singleportrom": [
+        "singleportrom",
+        "YhNtt",
+        "module"
+    ],
+    "ALTERA_MF_MEMORY_INITIALIZATION": [
+        "ALTERA_MF_MEMORY_INITIALIZATION",
+        "er73t",
+        "module"
+    ],
+    "...MASTER...": [
+        "SIM",
+        "amcQw",
+        "module"
+    ]
+}

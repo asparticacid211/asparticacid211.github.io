@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Random number generator
-  num_points = 1 << 20;
+  num_points = 1 << 10;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
     nums[i].re = rand()%20;

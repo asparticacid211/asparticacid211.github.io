@@ -1,0 +1,9 @@
+rc file Version 1.0
+
+[Design]
+COMPILE_PATH=/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga
+SystemC=FALSE
+UUM=FALSE
+KDB=FALSE
+USE_NOVAS_HOME=FALSE
+TOP=fft_tb 

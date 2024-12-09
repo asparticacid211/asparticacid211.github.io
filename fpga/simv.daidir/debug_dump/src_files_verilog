@@ -1,0 +1,9 @@
+/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/dualportram.v
+/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/fft.sv
+/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/fft_tbs.sv
+/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/multiplier.v
+/afs/andrew.cmu.edu/usr5/kpurani/private/15618/asparticacid211.github.io/fpga/singleportrom.v
+/afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/220model.v
+/afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_mf.v
+/afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/altera_primitives.v
+/afs/ece/support/altera/release/16.1.2/quartus/eda/sim_lib/sgate.v

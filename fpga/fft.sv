@@ -218,19 +218,28 @@ module memory_controller
         end
     end
 
-    true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, .rst_n,
-                        .addr_a(Addr_port1_mem0), .addr_b(Addr_port2_mem0), 
-                        .we_a(we_1_mem0), .we_b(we_2_mem0),
-                        .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
-                        .q_a(Data_R1_mem0), .q_b(Data_R2_mem0));
-    true_dpram_sclk #(2*DATA_WIDTH, N) mem1(.clk, .rst_n,
-                        .addr_a(Addr_port1_mem1), .addr_b(Addr_port2_mem1), 
-                        .we_a(we_1_mem1), .we_b(we_2_mem1),
-                        .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
-                        .q_a(Data_R1_mem1), .q_b(Data_R2_mem1));
-    single_port_rom #(2*DATA_WIDTH, N) memT(.clk, 
-                        .addr(addrT_R), 
-                        .q({DataOutT.re, DataOutT.im}));
+    // true_dpram_sclk #(2*DATA_WIDTH, N) mem0(.clk, .rst_n,
+    //                     .addr_a(Addr_port1_mem0), .addr_b(Addr_port2_mem0), 
+    //                     .we_a(we_1_mem0), .we_b(we_2_mem0),
+    //                     .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
+    //                     .q_a(Data_R1_mem0), .q_b(Data_R2_mem0));
+    // true_dpram_sclk #(2*DATA_WIDTH, N) mem1(.clk, .rst_n,
+    //                     .addr_a(Addr_port1_mem1), .addr_b(Addr_port2_mem1), 
+    //                     .we_a(we_1_mem1), .we_b(we_2_mem1),
+    //                     .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}), 
+    //                     .q_a(Data_R1_mem1), .q_b(Data_R2_mem1));
+    // single_port_rom #(2*DATA_WIDTH, N) memT(.clk, 
+    //                     .addr(addrT_R), 
+    //                     .q({DataOutT.re, DataOutT.im}));
+    dualportram mem0(.clock(clk), .address_a(Addr_port1_mem0), .address_b(Addr_port2_mem0),
+	                .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}),
+	                .wren_a(we_1_mem0), .wren_b(we_2_mem0),
+	                .q_a(Data_R1_mem0), .q_b(Data_R2_mem0));
+    dualportram mem1(.clock(clk), .address_a(Addr_port1_mem1), .address_b(Addr_port2_mem1),
+	                .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}),
+	                .wren_a(we_1_mem1), .wren_b(we_2_mem1),
+	                .q_a(Data_R1_mem1), .q_b(Data_R2_mem1));
+    singleportrom memT(.clock(clk), .address(addrT_R), .q({DataOutT.re, DataOutT.im}));
     
 endmodule 
 
@@ -251,8 +260,7 @@ module pt2_butterfly
 
     complex_t multOut;
 
-    // complex_multiply BtW (.X0(Bin), .X1(T), .out(multOut));
-    test_multiply #(DATA_WIDTH, FRACBITS) BtW (.X0(Bin), .X1(T), .out(multOut));
+    complex_multiply #(DATA_WIDTH, FRACBITS) BtW (.X0(Bin), .X1(T), .out(multOut));
 
     assign Aout.re = Ain.re + multOut.re;
     assign Aout.im = Ain.im + multOut.im;
@@ -271,28 +279,7 @@ endmodule
 // // Can also do it with 3 multipliers and 5 adders 
 // // https://link.springer.com/article/10.1007/s11265-023-01867-7
 // // Also could pipeline it 
-// module complex_multiply 
-// (
-//     input complex_t X0, X1;
-//     output complex_t out;
-// );
-
-//     logic [31:0] ac, ad, bc, bd, acbd, adbc;
-//     //(a + ib)*(c + id)
-//     multiplier_161632 AC(.dataa(X0.re), .datab(X1.re), .result(ac));
-//     multiplier_161632 AD(.dataa(X0.re), .datab(X1.im), .result(ad));
-//     multiplier_161632 BC(.dataa(X0.im), .datab(X1.re), .result(bc));
-//     multiplier_161632 BD(.dataa(X0.im), .datab(X1.im), .result(bd));
-
-//     assign acbd = ac + cd;
-//     assign adbc = ad + bc;
-
-//     assign out.re = acbd[30:15];
-//     assign out.im = adbc[30:15];
-
-// endmodule 
-
-module test_multiply 
+module complex_multiply 
 #(
     parameter WIDTH = 16,
     parameter FRACBITS = 0
@@ -304,10 +291,10 @@ module test_multiply
 
     logic [2*WIDTH-1:0] ac, ad, bc, bd, acbd, adbc;
     //(a + ib)*(c + id)
-    assign ac = X0.re * X1.re;
-    assign ad = X0.re * X1.im;
-    assign bc = X0.im * X1.re;
-    assign bd = X0.im * X1.im;
+    multiplier AC(.dataa(X0.re), .datab(X1.re), .result(ac));
+    multiplier AD(.dataa(X0.re), .datab(X1.im), .result(ad));
+    multiplier BC(.dataa(X0.im), .datab(X1.re), .result(bc));
+    multiplier BD(.dataa(X0.im), .datab(X1.im), .result(bd));
 
     assign acbd = ac - bd;
     assign adbc = ad + bc;
@@ -317,75 +304,62 @@ module test_multiply
 
 endmodule 
 
-module true_dpram_sclk
-#(
-    parameter WIDTH = 32,
-    parameter DEPTH = 8
-)
-(
-	input logic [WIDTH-1:0] data_a, data_b,
-	input logic [$clog2(DEPTH)-1:0] addr_a, addr_b,
-	input logic we_a, we_b, clk, rst_n,
-	output logic [WIDTH-1:0] q_a, q_b
-);
-	// Declare the RAM variable
-	logic [WIDTH-1:0] ram[DEPTH-1:0];
+// module true_dpram_sclk
+// #(
+//     parameter WIDTH = 32,
+//     parameter DEPTH = 8
+// )
+// (
+// 	input logic [WIDTH-1:0] data_a, data_b,
+// 	input logic [$clog2(DEPTH)-1:0] addr_a, addr_b,
+// 	input logic we_a, we_b, clk, rst_n,
+// 	output logic [WIDTH-1:0] q_a, q_b
+// );
+// 	logic [WIDTH-1:0] ram[DEPTH-1:0];
 
-	always_ff @(posedge clk) begin
-        if (~rst_n) begin
-            $readmemh ("input_samples.mem", ram); 
-        end
-        else begin
-            // Port A
-            if (we_a) begin
-                ram[addr_a] <= data_a;
-                q_a <= data_a;
-            end
-            else begin
-                q_a <= ram[addr_a];
-            end
-            // Port B
-            if (we_b) begin
-                ram[addr_b] <= data_b;
-                q_b <= data_b;
-            end
-            else begin
-                q_b <= ram[addr_b];
-            end
-        end
-	end
+// 	always_ff @(posedge clk) begin
+//         if (~rst_n) begin
+//             $readmemh ("input_samples.mem", ram); 
+//         end
+//         else begin
+//             // Port A
+//             if (we_a) begin
+//                 ram[addr_a] <= data_a;
+//                 q_a <= data_a;
+//             end
+//             else begin
+//                 q_a <= ram[addr_a];
+//             end
+//             // Port B
+//             if (we_b) begin
+//                 ram[addr_b] <= data_b;
+//                 q_b <= data_b;
+//             end
+//             else begin
+//                 q_b <= ram[addr_b];
+//             end
+//         end
+// 	end
 	
-endmodule
+// endmodule
 
-module single_port_rom
-#(
-    parameter WIDTH = 32,
-    parameter DEPTH = 8
-)
-(
-	input logic [$clog2(DEPTH)-1:0] addr,
-	input logic clk,
-	output logic [WIDTH-1:0] q
-);
-	// Declare the ROM variable
-	logic [WIDTH-1:0] rom[DEPTH-1:0];
+// module single_port_rom
+// #(
+//     parameter WIDTH = 32,
+//     parameter DEPTH = 8
+// )
+// (
+// 	input logic [$clog2(DEPTH)-1:0] addr,
+// 	input logic clk,
+// 	output logic [WIDTH-1:0] q
+// );
+// 	logic [WIDTH-1:0] rom[DEPTH-1:0];
 	
-	always_ff @(posedge clk) begin
-		q <= rom[addr];
-	end
+// 	always_ff @(posedge clk) begin
+// 		q <= rom[addr];
+// 	end
 	
-endmodule
-
-/* 8 Samples file (each real/imaginary is stored in 16 bits)
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-abcdef01
-*/
+// endmodule
 
 
 
