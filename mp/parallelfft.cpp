@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Random number generator
-  num_points = 1 << 10;
+  num_points = 1 << 20;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
     nums[i].re = rand()%20;
@@ -104,6 +104,7 @@ int main(int argc, char *argv[]) {
 
   int num_stages = log2(num_points);
   int num_levels = (num_points/2);
+  /*
   int count0;
   int count1;
   int count2;
@@ -112,11 +113,13 @@ int main(int argc, char *argv[]) {
   int count5;
   int count6;
   int count7;
+  */
   double stage_sum = 0;
   Complex v1, v2;
   int i, j, idx1, idx2;
   for (i = 0; i < num_stages; i++) {
     double stage_start = omp_get_wtime();
+    /*
     count0 = 0;
     count1 = 0;
     count2 = 0;
@@ -125,9 +128,10 @@ int main(int argc, char *argv[]) {
     count5 = 0;
     count6 = 0;
     count7 = 0;
+    */
     // double wtime = omp_get_wtime();
     // printf("num_threads: %d\n", omp_get_num_threads());
-    #pragma omp parallel for default(none) shared(i, nums, num_levels, num_threads, count0, count1, count2, count3, count4, count5, count6, count7) private(j, idx1, idx2, v1, v2) schedule(static, 1)
+    #pragma omp parallel for default(none) shared(i, nums, num_levels, num_threads/*, count0, count1, count2, count3, count4, count5, count6, count7 */) private(j, idx1, idx2, v1, v2) schedule(static, 1)
     for (j = 0; j < num_levels; j++) {
       // compute next stage
       double start = omp_get_wtime();
@@ -137,6 +141,7 @@ int main(int argc, char *argv[]) {
       nums[idx1] = v1;
       nums[idx2] = v2;
       // double end = omp_get_wtime();
+      /*
       if (omp_get_thread_num() == 0) count0++;
       else if (omp_get_thread_num() == 1) count1++;
       else if (omp_get_thread_num() == 2) count2++;
@@ -145,7 +150,8 @@ int main(int argc, char *argv[]) {
       else if (omp_get_thread_num() == 5) count5++;
       else if (omp_get_thread_num() == 6) count6++;
       else count7++;
-      double end = omp_get_wtime();
+      */
+      // double end = omp_get_wtime();
       // printf("num_threads: %d\n", omp_get_num_threads());
       // printf("time %d: %.8f\n", omp_get_thread_num(), end - start);
     }

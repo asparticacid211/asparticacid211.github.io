@@ -88,7 +88,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Random number generator
-  num_points = 1 << 10;
+  num_points = 1 << 15;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
     nums[i].re = rand()%20;
@@ -162,7 +162,8 @@ int main(int argc, char *argv[]) {
 
   */
 
-  
+
+
   // BEGIN FFT ALGORITHM
 
   const auto fft_start = std::chrono::steady_clock::now();
@@ -203,7 +204,7 @@ int main(int argc, char *argv[]) {
   recv_array.resize(num_levels_per_proc*2);
 
   for (int j = start; j < start+2*num_levels_per_proc; j++) {
-    proc_array[j - start] = nums[j]; 
+    proc_array[j - start] = nums[j];
   }
 
   for (int i = log2(num_levels_per_proc)+1; i < num_stages; i++) {
@@ -212,20 +213,13 @@ int main(int argc, char *argv[]) {
     int send_pid = (pid % (diff * 2) < diff) ? pid + diff : pid - diff;
 
     MPI_Send(proc_array.data(), proc_array.size(), MPI_Complex, send_pid, 0, MPI_COMM_WORLD);
-    
+
     MPI_Recv(recv_array.data(), proc_array.size(), MPI_Complex, send_pid, MPI_ANY_TAG, MPI_COMM_WORLD, NULL);
-    
 
     for (int j = 0; j < 2*num_levels_per_proc; j++) {
       std::tie(v1_send, v2_send) = butterfly(proc_array[j], recv_array[j], ((j+start) % (1 << i)), (1 << (i + 1)));
       proc_array[j] = v1_send;
     }
-    // MPI_Allgather(&sends[0], num_points/nproc, MPI_Complex_arr,
-    //               &recs[0], num_points/nproc, MPI_Complex_arr,
-    //               MPI_COMM_WORLD);
-    // for (int j = 0; j < num_points; j++) {
-    //   nums[recs[j].idx] = recs[j].val;
-    // }
     printf("stage %d: %.6f\n", i, MPI_Wtime() - start_time);
   }
 
@@ -233,7 +227,7 @@ int main(int argc, char *argv[]) {
 
   // END FFT ALGORITHM
 
-  
+
 
   if (pid == ROOT) {
     // for (int i = 0; i < num_points; i++) {
