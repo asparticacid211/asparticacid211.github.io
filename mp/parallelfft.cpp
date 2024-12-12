@@ -14,7 +14,9 @@
 
 #include "parallelfft.h"
 #define ROOT 0
+#define MIN_SIZE 1000
 
+// computes val1 + val2 * twiddle (determined by k, N) and val1 - val2 * twiddle
 std::tuple<Complex, Complex> butterfly(Complex val1, Complex val2, int k, int N) {
   Complex res1, res2, twiddle;
   twiddle.re = cos(-2 * M_PI * k/N);
@@ -27,6 +29,21 @@ std::tuple<Complex, Complex> butterfly(Complex val1, Complex val2, int k, int N)
   return std::make_tuple(res1, res2);
 }
 
+// recursive fft algorithm (fastest sequential solution)
+void fft_recursion(Complex *arr, int N, int s) {
+  if (N == 1) {
+    return;
+  }
+
+  fft_recursion(&arr[0], N/2, 2*s);
+  fft_recursion(&arr[1], N/2, 2*s);
+
+  for (int k = 0; k < N/2; k++) {
+    std::tie(arr[k], arr[k+N/2]) = butterfly(arr[k], arr[k+N/2], k, N);
+  }
+}
+
+// compute the bit-reversed position for a given bit position
 int computeFFTPosition(int num_points, int pos) {
   int num_bits = log2(num_points);
   int temp = pos;
@@ -49,6 +66,7 @@ int main(int argc, char *argv[]) {
   int num_points;
   std::string input_filename;
 
+  // read arguments
   int opt;
   while ((opt = getopt(argc, argv, "f:n:")) != -1) {
     switch (opt) {
@@ -66,6 +84,7 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // open file and read N
   std::ifstream fin(input_filename);
   if (!fin) {
     std::cerr << "Unable to open file: " << input_filename << ".\n";
@@ -73,6 +92,7 @@ int main(int argc, char *argv[]) {
   }
   fin >> num_points;
 
+  // read the points in the file
   std::vector<Complex> nums;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
@@ -80,7 +100,8 @@ int main(int argc, char *argv[]) {
     fin >> nums[rearranged].re >> nums[rearranged].im;
   }
 
-  // Random number generator
+
+  // random number generator (overrides data read above)
   num_points = 1 << 20;
   nums.resize(num_points);
   for (int i = 0; i < num_points; i++) {
@@ -88,103 +109,54 @@ int main(int argc, char *argv[]) {
     nums[i].im = rand()%20;
   }
 
+
   // std::cout << "Starting program\n";
   // printf("Number of points (N): %d\n", num_points);
   // for (int i = 0; i < num_points; i++) {
   //   printf("point: %f %f\n", nums[i].re, nums[i].im);
   // }
 
-
   // BEGIN FFT ALGORITHM
   omp_set_num_threads(num_threads);
-  printf("num_threads: %d\n", omp_get_num_threads());
-  printf("NUM_threads: %d\n", num_threads);
-  printf("numprocs: %d\n", omp_get_num_procs());
   const auto fft_start = std::chrono::steady_clock::now();
 
   int num_stages = log2(num_points);
   int num_levels = (num_points/2);
-  /*
-  int count0;
-  int count1;
-  int count2;
-  int count3;
-  int count4;
-  int count5;
-  int count6;
-  int count7;
-  */
-  double stage_sum = 0;
   Complex v1, v2;
   int i, j, idx1, idx2;
+  // we compute the fft in a series of stages
+  // in each stage, we have to perform several (independent) butterflys
+  // thus, we can split these equally across the processors
   for (i = 0; i < num_stages; i++) {
-    double stage_start = omp_get_wtime();
-    /*
-    count0 = 0;
-    count1 = 0;
-    count2 = 0;
-    count3 = 0;
-    count4 = 0;
-    count5 = 0;
-    count6 = 0;
-    count7 = 0;
-    */
-    // double wtime = omp_get_wtime();
-    // printf("num_threads: %d\n", omp_get_num_threads());
-    #pragma omp parallel for default(none) shared(i, nums, num_levels, num_threads/*, count0, count1, count2, count3, count4, count5, count6, count7 */) private(j, idx1, idx2, v1, v2) schedule(static, 1)
+    #pragma omp parallel for default(none) shared(i, nums, num_levels, num_threads) private(j, idx1, idx2, v1, v2) schedule(static, 1)
     for (j = 0; j < num_levels; j++) {
-      // compute next stage
-      double start = omp_get_wtime();
+      // compute the two array element indices, and then butterfly them
       idx1 = ((1 << (i+1)) * (j/(1 << i))) + (j % (1 << i));
       idx2 = idx1 + (1 << i);
       std::tie(v1, v2) = butterfly(nums[idx1], nums[idx2], (j % (1 << i)), (1 << (i + 1)));
       nums[idx1] = v1;
       nums[idx2] = v2;
-      // double end = omp_get_wtime();
-      /*
-      if (omp_get_thread_num() == 0) count0++;
-      else if (omp_get_thread_num() == 1) count1++;
-      else if (omp_get_thread_num() == 2) count2++;
-      else if (omp_get_thread_num() == 3) count3++;
-      else if (omp_get_thread_num() == 4) count4++;
-      else if (omp_get_thread_num() == 5) count5++;
-      else if (omp_get_thread_num() == 6) count6++;
-      else count7++;
-      */
-      // double end = omp_get_wtime();
-      // printf("num_threads: %d\n", omp_get_num_threads());
-      // printf("time %d: %.8f\n", omp_get_thread_num(), end - start);
     }
-    // wtime = omp_get_wtime() - wtime;
-    // printf( "Time taken by thread %d is %f\n", omp_get_thread_num(), wtime );
-    double stage_elapsed = omp_get_wtime() - stage_start;
-    printf("stage %d time: %f\n", i, stage_elapsed);
-    /*
-    printf("count0: %d\n", count0);
-    printf("count1: %d\n", count1);
-    printf("count2: %d\n", count2);
-    printf("count3: %d\n", count3);
-    printf("count4: %d\n", count4);
-    printf("count5: %d\n", count5);
-    printf("count6: %d\n", count6);
-    printf("count7: %d\n", count7);
-    */
-    // double stage_elapsed = omp_get_wtime() - stage_start;
-    // printf("stage %d time: %f\n", i, stage_elapsed);
-    stage_sum += stage_elapsed;
   }
-
 
   const auto fft_end = std::chrono::steady_clock::now();
 
-  printf("stage sum: %f\n", stage_sum);
-  printf("stage avg: %f\n", stage_sum/num_stages);
   // END FFT ALGORITHM
 
+  /*
+  // BEGIN FFT ALGORITHM (RECURSION)
+  const auto fft_start = std::chrono::steady_clock::now();
+  fft_recursion(&nums[0], num_points, 1);
+  const auto fft_end = std::chrono::steady_clock::now();
+  // END FFT ALGORITHM (RECURSION)
+  */
+
+  // print output values if we want
   // for (int i = 0; i < num_points; i++) {
   //   printf("%f %f \n", nums[i].re, nums[i].im);
   // }
 
+  // print times
   std::cout << "Initialization Time (sec): " << std::fixed << std::setprecision(10) << std::chrono::duration_cast<std::chrono::duration<double>>(fft_start - init_start).count() << std::endl;
   std::cout << "Computation Time (sec): " << std::fixed << std::setprecision(10) << std::chrono::duration_cast<std::chrono::duration<double>>(fft_end - fft_start).count() << std::endl;
 }
