@@ -193,11 +193,11 @@ int main(int argc, char *argv[]) {
       if (send_pid > pid) {
         std::tie(v1_send, v2_send) = butterfly(proc_array[j-start], recv_array[j-start], (j % (1 << i)), (1 << (i + 1)));
         nums[j] = v1_send;
-        nums[j+num_levels_per_proc*2*(send_pid - pid)] = v2_send;
+        // nums[j+num_levels_per_proc*2*(send_pid - pid)] = v2_send;
       } else {
         std::tie(v1_send, v2_send) = butterfly(recv_array[j-start], proc_array[j-start], (j % (1 << i)), (1 << (i + 1)));
         nums[j] = v2_send;
-        nums[j-num_levels_per_proc*2*(pid - send_pid)] = v1_send;
+        // nums[j-num_levels_per_proc*2*(pid - send_pid)] = v1_send;
       }
     }
   }
