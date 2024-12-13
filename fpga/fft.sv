@@ -71,7 +71,7 @@ module agu
 
     assign finLevel = (level == (N/2 - 1));
 
-    // Need to change this code -- kinda taken direclty from their paper which was made for C not sv (also need to check if it works for sizes other than 32)
+    // address generation math
     assign addr1 = (((level << 1) << stage) | ((level << 1) >> ($clog2(N)-stage))) & (N-1); 
     assign addr2 = ((((level<<1)+1) << stage) | (((level<<1)+1) >> ($clog2(N)-stage))) & (N-1);
     assign addrT = (mask >> stage) & level;   
