@@ -88,7 +88,7 @@ module fft_tb;
     end
 
     static int r1;
-    logic [2*DATA_WIDTH-1:0] bitch;
+    logic [2*DATA_WIDTH-1:0] mem_val;
     int fd;
     initial begin
 
@@ -115,8 +115,8 @@ module fft_tb;
             force TOP.mem_control.Addr_port1_mem0 = r1;
             @(posedge clk);
             @(posedge clk);
-            bitch = TOP.mem_control.Data_R1_mem0;
-            $display("Mem0 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem0, $signed(bitch[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(bitch[DATA_WIDTH-1:0]));
+            mem_val = TOP.mem_control.Data_R1_mem0;
+            $display("Mem0 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem0, $signed(mem_val[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(mem_val[DATA_WIDTH-1:0]));
             release TOP.mem_control.Addr_port1_mem0;
         end
         release TOP.mem_control.we_1_mem0;
@@ -129,9 +129,9 @@ module fft_tb;
             force TOP.mem_control.Addr_port1_mem1 = r1;
             @(posedge clk);
             @(posedge clk);
-            bitch = TOP.mem_control.Data_R1_mem1;
-            $display("Mem1 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem1, $signed(bitch[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(bitch[DATA_WIDTH-1:0]));
-            $fdisplay(fd, "%h", bitch);
+            mem_val = TOP.mem_control.Data_R1_mem1;
+            $display("Mem1 | Addr:%h | Val_re:%h | Val_im:%h", TOP.mem_control.Addr_port1_mem1, $signed(mem_val[2*DATA_WIDTH-1:DATA_WIDTH]), $signed(mem_val[DATA_WIDTH-1:0]));
+            $fdisplay(fd, "%h", mem_val);
             release TOP.mem_control.Addr_port1_mem1;
         end
         release TOP.mem_control.we_1_mem1;
