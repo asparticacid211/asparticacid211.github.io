@@ -1,16 +1,19 @@
 `default_nettype none
 
+// struct to store 16 bit complex type fixed point data
 typedef struct {
-    logic [15:0] re;
-    logic [15:0] im;
+	logic [15:0] re; // real part
+	logic [15:0] im; // imaginary part
 } complex_t;
 
+// struct to store stage and progress info across the modules
 typedef struct {
-    logic [2:0] stage;
-    logic valid;
-    logic is_last;
+	logic [2:0] stage; // current stage of operation to determine which memory to read from
+	logic valid; // if the current data is valid or not (will not be valid during stall phase)
+    	logic is_last; // to signal the memory controller that this is last butterfly operation to dertemine finish signal
 } stage_info_t;
 
+// Top module to connext everything together
 module top_fft 
 #(
     parameter N = 8,
@@ -53,6 +56,9 @@ module top_fft
 
 endmodule
 
+// The address generation unit 
+// Generates two addresses for butterfly read and 1 address for twiddle read based on current stage
+// Sends output to memory controller
 module agu 
 #(
     parameter N = 8,
@@ -116,6 +122,10 @@ module agu
 
 endmodule 
 
+// takes in memory reads from AGU and memory writes from Butterfy Unit
+// outputs the memory reads to butterfly unit to compute result 
+// determines stall signal when butterfly unit still has not finished writing all the values for current stage 
+// determines finish when the butterfly unit sends the write for the final value to memory 
 module memory_controller 
 #(
     parameter N = 8,
@@ -143,6 +153,7 @@ module memory_controller
 
     assign stall = (stage_info_W.valid == 1) & (stage_info_W.stage != stage_info_R.stage);
 
+    // Flipping between two RAMs based on current stage (writing to one and reading from the other)
     always_comb begin 
         if (stall) begin
             if (stage_info_W.stage[0] == 0) begin
@@ -236,6 +247,9 @@ module memory_controller
     // single_port_rom #(2*DATA_WIDTH, N) memT(.clk, 
     //                     .addr(addrT_R), 
     //                     .q({DataOutT.re, DataOutT.im}));
+
+    // Instantiations for 8 Sample memories for synthesis on Quartus 
+    // (for simulation of bigger values, you can comment the following and uncomment the instantiations above)
     dualportram mem0(.clock(clk), .address_a(Addr_port1_mem0), .address_b(Addr_port2_mem0),
 	                .data_a({DataInA.re, DataInA.im}), .data_b({DataInB.re, DataInB.im}),
 	                .wren_a(we_1_mem0), .wren_b(we_2_mem0),
@@ -248,6 +262,7 @@ module memory_controller
     
 endmodule 
 
+// Computes a 2 point Complex Butterfly Operation 
 module pt2_butterfly 
 #(
     parameter N = 8,
@@ -273,6 +288,7 @@ module pt2_butterfly
     assign Bout.im = Ain.im - multOut.im;
 
     // change once pipelined
+    // In case the multiply unit is the critcal path 
     assign stage_info_out = stage_info_in;
 
     assign addr1_out = addr1_in;
@@ -280,35 +296,45 @@ module pt2_butterfly
 
 endmodule 
 
-// // simple combinational implementation with 4 multipliers and 2 adders
-// // Can also do it with 3 multipliers and 5 adders 
-// // https://link.springer.com/article/10.1007/s11265-023-01867-7
-// // Also could pipeline it 
+// simple combinational implementation with 4 multipliers and 2 adders
+// Can also do it with 3 multipliers and 5 adders 
+// Also could pipeline it if needed
 module complex_multiply 
 #(
     parameter WIDTH = 16,
-    parameter FRACBITS = 0
+    parameter FRACBITS = 8
 )
 (
     input complex_t X0, X1,
     output complex_t out
 );
 
-    logic [2*WIDTH-1:0] ac, ad, bc, bd, acbd, adbc;
-    //(a + ib)*(c + id)
-    multiplier AC(.dataa(X0.re), .datab(X1.re), .result(ac));
-    multiplier AD(.dataa(X0.re), .datab(X1.im), .result(ad));
-    multiplier BC(.dataa(X0.im), .datab(X1.re), .result(bc));
-    multiplier BD(.dataa(X0.im), .datab(X1.im), .result(bd));
+    localparam MULT_WIDTH = 16; // Change if you need to use different multiplier widths (must be >= WITDH of fixed point data)
+    localparam EXTRA_BITS = MULT_WIDTH - WIDTH;
+    localparam TOTAL_FRACBITS = FRACBITS + EXTRA_BITS;
+
+    logic [2*MULT_WIDTH-1:0] ac, ad, bc, bd, acbd, adbc;
+
+    // Currently using Quartus generated multiplers (uncomment the later code for just simulation purposes -- to experiment with different widths)
+    multiplier AC(.dataa({X0.re, {EXTRA_BITS{1'b0}}}), .datab({X1.re, {EXTRA_BITS{1'b0}}}), .result(ac));
+    multiplier AD(.dataa({X0.re, {EXTRA_BITS{1'b0}}}), .datab({X1.im, {EXTRA_BITS{1'b0}}}), .result(ad));
+    multiplier BC(.dataa({X0.im, {EXTRA_BITS{1'b0}}}), .datab({X1.re, {EXTRA_BITS{1'b0}}}), .result(bc));
+    multiplier BD(.dataa({X0.im, {EXTRA_BITS{1'b0}}}), .datab({X1.im, {EXTRA_BITS{1'b0}}}), .result(bd));
+
+    // assign ac = X0.re * X1.re;
+    // assign ad = X0.re * X1.im;
+    // assign bc = X0.im * X1.re;
+    // assign bd = X0.im * X1.im;
 
     assign acbd = ac - bd;
     assign adbc = ad + bc;
 
-    assign out.re = acbd[(WIDTH-1+FRACBITS):FRACBITS];
-    assign out.im = adbc[(WIDTH-1+FRACBITS):FRACBITS];
+    assign out.re = acbd[(MULT_WIDTH-1+TOTAL_FRACBITS):TOTAL_FRACBITS+EXTRA_BITS]; 
+    assign out.im = adbc[(MULT_WIDTH-1+TOTAL_FRACBITS):TOTAL_FRACBITS+EXTRA_BITS];
 
 endmodule 
 
+// // Uncommment if you need to simulate different sized memories (for different input sizes)
 // module true_dpram_sclk
 // #(
 //     parameter WIDTH = 32,
