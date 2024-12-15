@@ -3,6 +3,31 @@ URL: asparticacid211.github.io
 Team members: Lohith Tummala (lctummal), Kavish Purani (kpurani)
 ## Summary
 We plan to implement a parallel version of the Cooley-Tukey Radix-2 Fast Fourier Transform algorithm using SystemVerilog and synthesize the design on the DE2-115 FPGA, initially for 8 points. We want to assess the latency of the computation and the logic utilization on the FPGA as a function of the number of points that we decide to compute the FFT for. We also wish to compare this implementation against an OpenMPI C++ implementation that we will design and will be run on the GHC 8-core computers.  
+## Important Code Info
+fpga -- fpga src implementation 
+- fft.sv : SystemVerilog SRC Code
+- fft_tbs.sv : SystemVerilog TestBenches
+- DRAM_model.py : basic code to approx. worst case DRAM implementation cycles
+- generate_twiddles.py : create twiddle factors mif file in 16 bit signed fixed point format with 8 fractional bits for N samples
+- generate_results.py : converts from fixed point format back to floating point for ease of testing
+- input_samples.mif : file for loading input N samples in bit reversed order into RAM
+- twiddle_factors.mif : file for loading input N sample twiddles into ROM
+- multiplier.v : copied from fpga_prims for ease of makefile
+- singleportrom.v : copied from fpga_prims for ease of makefile
+- dualportram.v : copied from fpga_prims for ease of makefile
+fpga_prims -- contains Quartus generated RAM, ROM, and Multiplier files for synthesis
+- mult16x16/multiplier.v : 16x16 signed multiplication Quartus synthesis file
+- ram32x8/dualportram.v : 32 bit width x 8 words deep, Dual port 2-cycle BRAM
+- rom32x8/singleportrom.v :  32 bit width x 8 words deep, Single port ROM
+inputs -- input memory files for mp and mpi implementation
+- testcase.txt : 8 sample testcase
+- text16.txt : 16 sample testcase
+mp -- mp src implementation
+- parallelfft.cpp : MP SRC Code
+- parallelfft.h : MP SRC structs 
+mpi -- mpi src implementation
+- parallelfft.cpp : MPI SRC Code
+- parallelfft.h : MPI SRC structs 
 ## Background
 The Discrete Fourier transform (DFT) is a very important and widely-used procedure that is used in differential equations, signal processing, physics, etc. When given a function that varies in time and is discrete, taking the DFT will return a function that varies in frequency, displaying the weightings of frequencies that are present in the original function. For example, if the time-valued function is the sum of several sine functions, each with a different frequency, taking the Fourier transform will give a graph with spikes at those frequency values.  
   
