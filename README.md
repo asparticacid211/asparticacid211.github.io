@@ -15,19 +15,24 @@ fpga -- fpga src implementation
 - multiplier.v : copied from fpga_prims for ease of makefile
 - singleportrom.v : copied from fpga_prims for ease of makefile
 - dualportram.v : copied from fpga_prims for ease of makefile
+
 fpga_prims -- contains Quartus generated RAM, ROM, and Multiplier files for synthesis
 - mult16x16/multiplier.v : 16x16 signed multiplication Quartus synthesis file
 - ram32x8/dualportram.v : 32 bit width x 8 words deep, Dual port 2-cycle BRAM
 - rom32x8/singleportrom.v :  32 bit width x 8 words deep, Single port ROM
+
 inputs -- input memory files for mp and mpi implementation
 - testcase.txt : 8 sample testcase
 - text16.txt : 16 sample testcase
+
 mp -- mp src implementation
 - parallelfft.cpp : MP SRC Code
-- parallelfft.h : MP SRC structs 
+- parallelfft.h : MP SRC structs
+
 mpi -- mpi src implementation
 - parallelfft.cpp : MPI SRC Code
-- parallelfft.h : MPI SRC structs 
+- parallelfft.h : MPI SRC structs
+
 ## Background
 The Discrete Fourier transform (DFT) is a very important and widely-used procedure that is used in differential equations, signal processing, physics, etc. When given a function that varies in time and is discrete, taking the DFT will return a function that varies in frequency, displaying the weightings of frequencies that are present in the original function. For example, if the time-valued function is the sum of several sine functions, each with a different frequency, taking the Fourier transform will give a graph with spikes at those frequency values.  
   
