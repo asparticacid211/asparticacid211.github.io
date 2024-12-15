@@ -49,3 +49,7 @@ December 8-13: Write final paper and poster, work on stretch goals if time permi
 [Here](https://docs.google.com/document/d/1yUG169tpelAlSbY27yceWbm1mbr4Q-zQNxzeF_RIxFM/edit?usp=sharing) is a link to our proposal.
 ## Link to Milestone
 [Here](https://docs.google.com/document/d/1zhx1i9Y2WM3aTlEuAgh4CN6cTfl6yOpxplJLrfy2h84/edit?usp=sharing) is a link to our milestone report.
+## Link to Results
+[Here](https://docs.google.com/spreadsheets/d/1ow2t-NbBrvaotVUxrnNIqnrFgL58_PsSDsAoWpG5zf4/edit?usp=sharing) is a link to our results.
+## Link to Final Report
+[Here](https://docs.google.com/document/d/1yUw7wwo8hiISEHKIHcbRD7xUToadwspvJcHv7SgYjW8/edit?usp=sharing) is a link to our final report.
