@@ -40,11 +40,11 @@ The devices that we plan to implement this algorithm on are the DE2-115 Altera F
   
 As for the FPGA, we intend to use SystemVerilog, a hardware descriptive language designed to write code that can be transformed into utilization of physical logic gates and blocks on the FPGA. We use the DE2-115 FPGA since we have used it for 18-240, thus making it the most accessible device for us.
 ## Schedule
-November 10-16: Develop strategies for MPI and FPGA implementations  
-November 17-23: Code the MPI version and benchmark results, start FPGA implementation (for 8 points)  
-November 24-30: Finish 8-point FPGA implementation  
-December 1-7: Benchmark results, slack time for any delays, and work on generalized point algorithm if time permits  
-December 8-13: Write final paper and poster, work on stretch goals if time permits  
+(Done) November 10-16: Develop strategies for MPI and FPGA implementations  
+(Done) November 17-23: Code the MPI version and benchmark results, start FPGA implementation (for 8 points)  
+(Done) November 24-30: Finish 8-point FPGA implementation  
+(Done) December 1-7: Benchmark results, slack time for any delays, and work on generalized point algorithm if time permits  
+(Done) December 8-13: Write final paper and poster, work on stretch goals if time permits  
 ## Link to Proposal
 [Here](https://docs.google.com/document/d/1yUG169tpelAlSbY27yceWbm1mbr4Q-zQNxzeF_RIxFM/edit?usp=sharing) is a link to our proposal.
 ## Link to Milestone
